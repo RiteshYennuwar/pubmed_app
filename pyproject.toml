@@ -19,8 +19,9 @@ classifiers = [
 dependencies = [
     "streamlit",
     "requests",
-    # Add other pubmed-related dependencies here
 ]
+
+dev = []
 
 [project.urls]
 "Homepage" = "https://github.com/RiteshYennuwar/pubmed_app"
