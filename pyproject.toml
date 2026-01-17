@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pubmed_fullstack_app"
+version = "0.0.0"
+authors = [
+  { name = "RiteshYennuwar", email = "yennuwarritesh@hotmail.com" },
+]
+description = "A package for project fullstack app using PubMed API"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "streamlit",
+    "requests",
+    # Add other pubmed-related dependencies here
+]
+
+[project.urls]
+"Homepage" = "https://github.com/RiteshYennuwar/pubmed_app"
+"Bug Tracker" = "https://github.com/RiteshYennuwar/pubmed_app/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
