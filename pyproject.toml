@@ -20,6 +20,7 @@ dependencies = [
     "streamlit",
     "requests",
     "pydantic_settings",
+    "psycopg2",
 ]
 
 [project.optional-dependencies]
