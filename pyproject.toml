@@ -19,7 +19,7 @@ classifiers = [
 dependencies = [
     "streamlit",
     "requests",
-    "pydantic",
+    "pydantic_settings",
 ]
 
 [project.optional-dependencies]
