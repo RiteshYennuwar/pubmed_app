@@ -1,9 +1,13 @@
 from pubmed_app.config.logger import logger
 from pubmed_app.etl.pubmend_client import PubMedClient
+from pubmed_app.etl.parser import PubMedParser
+from pubmed_app.etl.transformer import ArticleTransformer
 
 class ETLPipeline:
     def __init__(self, email: str, api_key: str = None):
         self.client = PubMedClient(email=email, api_key=api_key)
+        self.parser = PubMedParser()
+        self.transformer = ArticleTransformer()
 
     def run(self, search_term: str, retmax: int = 20):
         logger.info(f"Starting ETL pipeline for search term: {search_term}")
@@ -20,8 +24,16 @@ class ETLPipeline:
 
         logger.info("Transforming data")
         fetched_data = self.client.fetch(id_list=id_list)
-        logger.info(f"fetched_data {fetched_data[:500]}...") # todo: remove this line later
 
+        logger.info(f"fetched_data {fetched_data[:500]}...") # todo: remove this line later
+        logger.info(f"Fetched data length: {len(fetched_data)} characters")
+
+        parsed_articles = self.parser.parse(fetched_data)
+        transformed_articles = self.transformer.transform(parsed_articles)
+
+        logger.info(f"transformed_articles {transformed_articles[:2]}...") # todo: remove this line later   
+        logger.info(f"Transformed {len(transformed_articles)} articles")
+        
         logger.info("ETL pipeline completed successfully")
 
 
