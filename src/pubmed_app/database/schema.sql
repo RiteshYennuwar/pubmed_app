@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS article_meah CASCADE;
+DROP TABLE IF EXISTS article_mesh_terms CASCADE;
 DROP TABLE IF EXISTS article_authors CASCADE;
 DROP TABLE IF EXISTS articles CASCADE;
 DROP TABLE IF EXISTS authors CASCADE;
@@ -8,7 +8,7 @@ DROP TABLE IF EXISTS mesh_terms CASCADE;
 
 CREATE TABLE journals (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(512) UNIQUE NOT NULL
+    name VARCHAR(512) UNIQUE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -58,7 +58,7 @@ CREATE TABLE article_authors (
     author_id INTEGER REFERENCES authors(id) ON DELETE CASCADE,
     author_postion INTEGER NOT NULL,
 
-    UNIQUE (article_id, author_id)
+    UNIQUE (article_id, author_id),
 
     CONSTRAINT valid_position CHECK (author_postion >= 1)
 );
@@ -66,7 +66,7 @@ CREATE TABLE article_authors (
 CREATE INDEX idx_article_authors_article_id ON article_authors(article_id);
 CREATE INDEX idx_article_authors_author_id ON article_authors(author_id);
 
-CREATE TABLE article_meah (
+CREATE TABLE article_mesh_terms (
     id SERIAL PRIMARY KEY,
     article_id INTEGER REFERENCES articles(id) ON DELETE CASCADE,
     mesh_term_id INTEGER REFERENCES mesh_terms(id) ON DELETE CASCADE,
@@ -74,8 +74,8 @@ CREATE TABLE article_meah (
     UNIQUE (article_id, mesh_term_id)
 );
 
-CREATE INDEX idx_article_meah_article_id ON article_meah(article_id);
-CREATE INDEX idx_article_meah_mesh_term_id ON article_meah(mesh_term_id);
+CREATE INDEX idx_article_mesh_terms_article_id ON article_mesh_terms(article_id);
+CREATE INDEX idx_article_mesh_terms_mesh_term_id ON article_mesh_terms(mesh_term_id);
 
 CREATE OR REPLACE VIEW v_articles_full AS
 SELECT
@@ -85,8 +85,8 @@ SELECT
     a.abstract,
     j.name AS journal_name,
     a.publication_year,
-    a.created_at,
-FROM articels a
+    a.created_at
+FROM articles a
 LEFT JOIN journals j ON a.journal_id = j.id;
 
 
@@ -98,11 +98,11 @@ SELECT
     j.name AS journal_name,
     a.publication_year,
     COUNT(DISTINCT aa.author_id) AS author_count,
-    COUNT(DISTINCT am.mesh_term_id) AS mesh_term_count,
-FROM articels a
+    COUNT(DISTINCT am.mesh_term_id) AS mesh_term_count
+FROM articles a
 LEFT JOIN journals j ON a.journal_id = j.id
 LEFT JOIN article_authors aa ON a.id = aa.article_id
-LEFT JOIN article_meah am ON a.id = am.article_id
+LEFT JOIN article_mesh_terms am ON a.id = am.article_id
 GROUP BY a.id,a.pmid,a.title,a.publication_year,j.name;
 
 CREATE OR REPLACE FUNCTION get_article_authors(p_article_id INTEGER)
@@ -118,9 +118,9 @@ RETURNS TEXT AS $$
 $$ LANGUAGE SQL;
 
 CREATE OR REPLACE FUNCTION get_article_mesh_terms(p_article_id INTEGER)
-RETURNS TEXT[] AS $$
-    SELECT STRING_AGG(m.descriptor ORDER BY m.descriptor)
-    FROM article_meah am
+RETURNS TEXT AS $$
+    SELECT STRING_AGG(m.term, ', ' ORDER BY m.term)
+    FROM article_mesh_terms am
     JOIN mesh_terms m ON am.mesh_term_id = m.id
     WHERE am.article_id = p_article_id;
 $$ LANGUAGE SQL;
