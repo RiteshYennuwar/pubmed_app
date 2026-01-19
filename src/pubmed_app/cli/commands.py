@@ -69,3 +69,37 @@ def init_db(
         logger.error(f"Error initializing database: {e}")
         console.print(f"[bold red]Error initializing database:[/bold red] {e}")
         raise typer.Exit(code=1)
+
+@app.command()
+def etl(
+    topic: str = typer.Option(
+        ...,
+        "--topic", "-t",
+        help="The search term/topic to fetch articles from PubMed."
+        ),
+    max_results: int =typer.Option(
+        100,
+        "--max-results", "-m",
+        help="Maximum number of articles to fetch."
+        ),
+    debug: bool = typer.Option(
+        False,
+        "--debug", "-d",
+        help="Enable debug logging."
+        )
+    ):
+    from pubmed_app.etl import etl_pipeline
+    if debug:
+        from pubmed_app.config.logger import logger
+        logger.set_level_debug()
+    console.print(f"[bold green]Starting ETL pipeline for topic:[/bold green] {topic}")
+    console.print(f"[bold green]Maximum results to fetch:[/bold green] {max_results}")
+
+    try:
+        pipeline = etl_pipeline.ETLPipeline(topic=topic, max_results=max_results)
+        stats = pipeline.run()
+        console.print(f"[bold green]ETL pipeline completed with stats:[/bold green] {stats}")
+    except Exception as e:
+        logger.error(f"Error running ETL pipeline: {e}")
+        console.print(f"[bold red]Error running ETL pipeline:[/bold red] {e}")
+        raise typer.Exit(code=1)
