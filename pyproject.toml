@@ -21,6 +21,8 @@ dependencies = [
     "requests",
     "pydantic_settings",
     "psycopg2",
+    'typer,
+    "rich",
 ]
 
 [project.optional-dependencies]
@@ -32,3 +34,6 @@ dev = []
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[project.scripts]
+pubmed = "pubmed_fullstack_app.cli.commands:app"
