@@ -107,3 +107,32 @@ def etl(
         logger.error(f"Error running ETL pipeline: {e}")
         console.print(f"[bold red]Error running ETL pipeline:[/bold red] {e}")
         raise typer.Exit(code=1)
+
+@app.command()
+def serve(
+    port: int = typer.Option(
+        8501, 
+        "--port", "-p", 
+        help="Port number"
+    ),
+    host: str = typer.Option(
+        "localhost", 
+        "--host", 
+        help="Host address"
+    ),
+    ):
+    app_path = Path(__file__).parent.parent / "app" / "main.py"
+    
+    if not app_path.exists():
+        console.print(f"[bold red]App not found: {app_path}[/bold red]")
+        raise typer.Exit(1)
+    
+    console.print(f"\n[bold blue]🚀 Starting PubMed Explorer[/bold blue]")
+    console.print(f"   URL: [green]http://{host}:{port}[/green]\n")
+    
+    subprocess.run([
+        sys.executable, "-m", "streamlit", "run",
+        str(app_path),
+        "--server.port", str(port),
+        "--server.address", host,
+    ])
