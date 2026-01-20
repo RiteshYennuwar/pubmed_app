@@ -45,6 +45,7 @@ class ETLPipeline:
         logger.info(f"Load stats: {stats}")
 
         logger.info("ETL pipeline completed successfully")
+        return stats
 
 
 

@@ -88,16 +88,20 @@ def etl(
         help="Enable debug logging."
         )
     ):
+    from pubmed_app.config import settings, logger
     from pubmed_app.etl import etl_pipeline
     if debug:
-        from pubmed_app.config.logger import logger
-        logger.set_level_debug()
+        import logging
+        logging.getLogger('pubmed_app_logger').setLevel(logging.DEBUG)
     console.print(f"[bold green]Starting ETL pipeline for topic:[/bold green] {topic}")
     console.print(f"[bold green]Maximum results to fetch:[/bold green] {max_results}")
 
     try:
-        pipeline = etl_pipeline.ETLPipeline(topic=topic, max_results=max_results)
-        stats = pipeline.run()
+        pipeline = etl_pipeline.ETLPipeline(
+            email=settings.PUBMED_EMAIL,
+            api_key=settings.PUBMED_API_KEY
+        )
+        stats = pipeline.run(search_term=topic, retmax=max_results)
         console.print(f"[bold green]ETL pipeline completed with stats:[/bold green] {stats}")
     except Exception as e:
         logger.error(f"Error running ETL pipeline: {e}")
