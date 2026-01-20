@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     DB_NAME: str
     DB_USER: str
     DB_PASSWORD: str
+    BASE_URL: str
+    LLM_MODEL_NAME: str
+    API_KEY: str
 
     class Config:
         env_file = ".env"
