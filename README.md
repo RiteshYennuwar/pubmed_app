@@ -1,4 +1,4 @@
-PubMed Research Explorer
+# PubMed Research Explorer
 
 A full-stack application for exploring PubMed research articles with ETL pipeline, PostgreSQL storage, and Streamlit UI.
 
