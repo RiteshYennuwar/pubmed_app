@@ -12,6 +12,14 @@ from typing import Optional
 class ArticleCRUD:
     def get_by_pmid(self, pmid: str) -> Article | None:
         row = execute_single_query(
+            """
+            SELECT 
+                a.id, a.pmid, a.title, a.abstract, a.publication_year,
+                j.name AS journal_name
+            FROM articles a
+            LEFT JOIN journals j ON a.journal_id = j.id
+            WHERE a.pmid = %s
+            """,
             (pmid,)
         )
 
@@ -19,8 +27,8 @@ class ArticleCRUD:
             return None
         
         article = self._row_to_article(row)
-        article.authors = self._get_authors_for_article(article.pmid)
-        article.mesh_terms = self._get_mesh_terms_for_article(article.pmid)
+        article.authors = self._get_authors_for_article(row["id"])
+        article.mesh_terms = self._get_mesh_terms_for_article(row["id"])
         return article
     
     def get_by_id(self, article_id: int) -> Optional[Article]:
@@ -40,8 +48,9 @@ class ArticleCRUD:
             return None
         
         article = self._row_to_article(row)
-        article.authors = self._get_authors_for_article(article.pmid)
-        article.mesh_terms = self._get_mesh_terms_for_article(article.pmid)
+        article.authors = self._get_authors_for_article(article_id)
+        article.mesh_terms = self._get_mesh_terms_for_article(article_id)
+        return article
         return article
 
     def search(
@@ -59,12 +68,12 @@ class ArticleCRUD:
 
         query = """
         SELECT DISTINCT 
-            a.pmid, a.title, a.abstract, a.year, j.name AS journal_name
+            a.id, a.pmid, a.title, a.abstract, a.publication_year, j.name AS journal_name
         FROM articles a
         LEFT JOIN journals j ON a.journal_id = j.id
-        LEFT JOIN article_authors aa ON a.pmid = aa.article_pmid
+        LEFT JOIN article_authors aa ON a.id = aa.article_id
         LEFT JOIN authors au ON aa.author_id = au.id
-        LEFT JOIN article_mesh_terms amt ON a.pmid = amt.article_pmid
+        LEFT JOIN article_mesh_terms amt ON a.id = amt.article_id
         LEFT JOIN mesh_terms mt ON amt.mesh_term_id = mt.id
         WHERE 1=1
         """
@@ -150,16 +159,16 @@ class ArticleCRUD:
             created_at=row.get("created_at")
         )
     
-    def _get_authors_for_article(self, pmid: str) -> list[Author]:
+    def _get_authors_for_article(self, article_id: int) -> list[Author]:
         rows = execute_query(
             """
             SELECT au.last_name, au.first_name, au.affiliation
             FROM authors au
             JOIN article_authors aa ON au.id = aa.author_id
-            WHERE aa.article_pmid = %s
-            ORDER BY aa.author_order ASC
+            WHERE aa.article_id = %s
+            ORDER BY aa.author_postion ASC
             """,
-            (pmid,)
+            (article_id,)
         )
 
         return [
@@ -171,16 +180,16 @@ class ArticleCRUD:
             for row in rows
         ]
     
-    def _get_mesh_terms_for_article(self, pmid: str) -> list[str]:
+    def _get_mesh_terms_for_article(self, article_id: int) -> list[str]:
         rows = execute_query(
             """
             SELECT mt.term
             FROM mesh_terms mt
             JOIN article_mesh_terms amt ON mt.id = amt.mesh_term_id
-            WHERE amt.article_pmid = %s
+            WHERE amt.article_id = %s
             ORDER BY mt.term ASC
             """,
-            (pmid,)
+            (article_id,)
         )
 
         return [row["term"] for row in rows]

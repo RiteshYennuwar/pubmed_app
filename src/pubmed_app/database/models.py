@@ -44,5 +44,17 @@ class Article:
     mesh_terms: list[str] = field(default_factory=list)
 
     @property
+    def journal_name(self) -> Optional[str]:
+        if isinstance(self.journal, str):
+            return self.journal
+        elif self.journal:
+            return self.journal.name
+        return None
+
+    @property
+    def publication_year(self) -> Optional[int]:
+        return self.year
+
+    @property
     def author_names(self) -> str:
         return ", ".join(author.full_name for author in self.authors)
